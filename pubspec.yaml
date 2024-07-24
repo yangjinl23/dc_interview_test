@@ -1,0 +1,33 @@
+name: dc_interview_test
+version: 1.0.0+1
+publish_to: none
+description: A new Flutter project.
+environment: 
+  sdk: '>=3.3.4 <4.0.0'
+
+dependencies: 
+  cupertino_icons: ^1.0.6
+
+  get_cli: ^1.8.0
+  get: ^4.6.6
+  logger: ^2.3.0
+  http: ^1.1.2
+  url_launcher: ^6.1.1 
+  flutter_launcher_icons: "^0.13.1"
+  flutter: 
+    sdk: flutter
+
+dev_dependencies: 
+  flutter_lints: ^3.0.0
+  flutter_test: 
+    sdk: flutter
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "images/app_icon.png"
+
+flutter: 
+  uses-material-design: true
+  assets:
+    - images/
