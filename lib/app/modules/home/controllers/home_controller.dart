@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:dc_interview_test/utils/logger.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -27,6 +30,8 @@ class HomeController extends GetxController {
   final languages = <LanguageModel>[].obs;
   final isLoading = false.obs;
   final isErrorState = false.obs;
+
+  Completer<void>? _currentFetch;
 
   /// Method to determine the current UI state
   Widget getCurrentState() {
@@ -93,21 +98,32 @@ class HomeController extends GetxController {
   Future<void> fetchLanguages(String category) async {
     isLoading.value = true;
 
+    // Cancel the previous request if it is still in progress
+    _currentFetch?.completeError('Cancelled');
+    _currentFetch = Completer<void>();
+
     try {
       HiLog.d("requested key word is  ${searchText.value}");
       final result = await apiService.fetchLanguages(searchText.value,
           noThrottling: !isErrorState.value);
 
-      languages.value = result;
-      HiLog.d("assigned result is  $languages");
-      isErrorState.value = false;
-      HiLog.d("success $result");
+      if (!_currentFetch!.isCompleted) {
+        languages.value = result;
+        HiLog.d("assigned result is  $languages");
+        isErrorState.value = false;
+        HiLog.d("success $result");
+      }
     } catch (e) {
-      HiLog.d("error occured");
-      isErrorState.value = true;
+      if (e != 'Cancelled') {
+        HiLog.d("error occurred");
+        isErrorState.value = true;
+      }
     } finally {
-      HiLog.d("loading finished");
-      isLoading.value = false;
+      if (!_currentFetch!.isCompleted) {
+        HiLog.d("loading finished");
+        isLoading.value = false;
+      }
+      _currentFetch!.complete();
     }
   }
 
@@ -119,10 +135,15 @@ class HomeController extends GetxController {
     }
   }
 
+  void initialization() async {
+    FlutterNativeSplash.remove();
+  }
+
   @override
   void onInit() {
     searchTextController.text = searchText.value;
     fetchLanguages(searchText.value);
+    initialization();
     super.onInit();
   }
 
